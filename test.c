@@ -1,16 +1,6 @@
 #include "float.h"
-#include<time.h>
-
 int main()
 {
-	/*
-	FLOAT a, b, c;
-	a.val = P_NAN_F;
-	b.val = N_NAN_F;
-	c.fval = a.fval + b.fval;
-	printf("%f, %08X, %u\n", c.fval, c.val, c.val);
-	system("pause");
-	*/
 	FLOAT a, b, resultCorrect, resultCalculated;
 	srand(time(NULL));
 	for (uint32_t i = 1; i <= 0xffffffff; ++i)
@@ -19,19 +9,11 @@ int main()
 		uint32_t random2 = rand();
 		uint32_t random3 = rand();
 		uint32_t random4 = rand();
-		a.val = random1 << 16 + random2;
-		b.val = random3 << 16 + random4; 
+		a.val = (random1 << 16) + random2;
+		b.val = (random3 << 16) + random4; 
 
 		resultCorrect.fval = a.fval + b.fval;
 		resultCalculated.val = float_add(a.val, b.val);
-		/*
-		printf("%u+%u\n", a.val, b.val);
-
-		printf("%u ", resultCorrect.val);
-		printf("%u\n", resultCalculated.val);
-		printf("%f\n", resultCorrect.fval);
-		printf("%f\n", resultCalculated.fval);
-		*/
 
 		if (resultCalculated.val != resultCorrect.val)
 		{
