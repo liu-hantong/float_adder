@@ -1,7 +1,7 @@
 #include "float.h"
 
 // the last three bits of the significand are reserved for the GRS bits
-inline uint32_t normalize(uint32_t sign, int32_t exp, uint64_t sig_grs)
+uint32_t normalize(uint32_t sign, int32_t exp, uint64_t sig_grs)
 {
 
 	// normalization
@@ -97,21 +97,7 @@ inline uint32_t normalize(uint32_t sign, int32_t exp, uint64_t sig_grs)
 	f.fraction = sig_grs; // only the lowest 23 bits are kept
 	return f.val;
 }
-/*
-CORNER_CASE_RULE corner_add[] = {
-	{P_ZERO_F, P_ZERO_F, P_ZERO_F},
-	{N_ZERO_F, P_ZERO_F, P_ZERO_F},
-	{P_ZERO_F, N_ZERO_F, P_ZERO_F},
-	{N_ZERO_F, N_ZERO_F, N_ZERO_F},
-	{P_INF_F, N_INF_F, N_NAN_F},
-	{N_INF_F, P_INF_F, N_NAN_F},
-	{P_INF_F, P_NAN_F, P_NAN_F},
-	{P_INF_F, N_NAN_F, N_NAN_F},
-	{N_INF_F, P_NAN_F, P_NAN_F},
-	{N_INF_F, N_NAN_F, N_NAN_F},
-	{N_NAN_F, P_NAN_F, P_NAN_F},
-};
-*/
+
 CORNER_CASE_RULE corner_add[] = {
 	{P_ZERO_F, P_ZERO_F, P_ZERO_F},
 	{N_ZERO_F, P_ZERO_F, P_ZERO_F},
@@ -119,20 +105,9 @@ CORNER_CASE_RULE corner_add[] = {
 	{N_ZERO_F, N_ZERO_F, N_ZERO_F},
 	
 	{P_INF_F, N_INF_F, N_NAN_F},
-	{N_INF_F, P_INF_F, N_NAN_F},
-
-	/*
-	{P_INF_F, P_NAN_F, P_ZERO_F},
-	{P_INF_F, N_NAN_F, 0x7ff80000},
-	{N_INF_F, P_NAN_F, P_ZERO_F},
-	{N_INF_F, N_NAN_F, 0xfff80000},
-
-	{P_NAN_F, P_INF_F, P_ZERO_F},
-	{N_NAN_F, P_INF_F, 0x7ff80000},
-	{P_NAN_F, N_INF_F, P_ZERO_F},
-	{N_NAN_F, N_INF_F, 0xfff80000},
-	*/
+	{N_INF_F, P_INF_F, N_NAN_F}
 };
+
 bool isNaN(uint32_t float_number)
 {
 	//exponent all ones and fraction not all zeros
@@ -258,9 +233,7 @@ uint32_t float_add(uint32_t a, uint32_t b)
 	}
 
 	uint32_t exp_res = fb.exponent;
-
+	
 	// normalize the result and return
 	return normalize(f.sign, exp_res, sig_res);
 }
-
-

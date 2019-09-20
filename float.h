@@ -36,3 +36,9 @@ typedef struct
 	uint32_t b;
 	uint32_t res;
 } CORNER_CASE_RULE;
+
+//core functions needed for test.c
+uint32_t float_add(uint32_t a, uint32_t b);
+
+
+
