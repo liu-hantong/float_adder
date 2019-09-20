@@ -105,7 +105,7 @@ CORNER_CASE_RULE corner_add[] = {
 	{N_ZERO_F, N_ZERO_F, N_ZERO_F},
 	
 	{P_INF_F, N_INF_F, N_NAN_F},
-	{N_INF_F, P_INF_F, N_NAN_F}
+	{N_INF_F, P_INF_F, N_NAN_F},
 };
 
 bool isNaN(uint32_t float_number)

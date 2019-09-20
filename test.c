@@ -1,9 +1,11 @@
 #include "float.h"
+#define MAX_ADD_TIME 0xffffffff
 int main()
 {
 	FLOAT a, b, result_correct, result_calculated;
+	uint32_t i = 0;
 	srand(time(NULL));
-	for (uint32_t i = 1; i <= 100000000; ++i)
+	for (; i < MAX_ADD_TIME; ++i)
 	{
 		uint32_t random1 = rand();
 		uint32_t random2 = rand();
@@ -31,9 +33,16 @@ int main()
 			printf("%f ", result_correct.fval);
 			printf("%f\n", result_calculated.fval);
 
-			printf("Failed! Check the outputs for more information!");
+			printf("\033[1;31mFailed!\033[0m Check the outputs for more information!");
 			break;
 		}
+		if( i%(0xffff) == 0 && i != 0)
+			printf("%u additions \033[0;32mpassed\033[0m.\n", i);
 	}
+
+	//finish test
+	if( i == 0xffffffff)
+   printf("\033[1;31mCongratulations!\033[0m All %u additions \033[0;32mpassed\033[0m.\n", MAX_ADD_TIME);
+
 	return 0;
 }
