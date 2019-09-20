@@ -165,18 +165,18 @@ uint32_t float_add(uint32_t a, uint32_t b)
 	fb.val = b;
 
 	// corner cases 4, one of the number is infity or NaN, return this number
-	if (fa.exponent == 0xff)
-	{
-		if (isNaN(fa.val))
-			fa.val|= 0x400000;
-		return fa.val;
-	}
-
 	if (fb.exponent == 0xff)
 	{
 		if (isNaN(fb.val))
-			fb.val |= 0x400000;
+			fb.val|= 0x400000;
 		return fb.val;
+	}
+
+	if (fa.exponent == 0xff)
+	{
+		if (isNaN(fa.val))
+			fa.val |= 0x400000;
+		return fa.val;
 	}
 
 	/* non-corner cases, do normal additions */
