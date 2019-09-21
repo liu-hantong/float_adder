@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<!-- saved from url=(0055)http://steve.hollasch.net/cgindex/coding/ieeefloat.html -->
+<html class="gr__steve_hollasch_net"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="description" content="An overview of IEEE Standard 754 floating-point representation.">
+    <meta name="keywords" content="floating point, ieee">
+
+    <link rev="made" href="mailto:steve@hollasch.net">
+    <link rev="made" href="https://github.com/hollasch/">
+
+    <title>IEEE Standard 754 Floating-Point</title>
+
+    <style>
+
+        body {   
+            margin-top:    10%;
+            margin-left:   auto;
+            margin-right:  auto;
+            margin-bottom: 20%;
+            max-width:     36em;
+            line-height:   1.5em;
+            font-family:   Sans-Serif;
+        }
+
+        h1 {
+            letter-spacing: -1pt;
+            margin-bottom: 0;
+            line-height:   .85em;
+            font-family:   Serif;
+            font-size:     350%;
+            font-weight:   normal;
+        }
+
+        h2 {
+            margin:  1.5em 0 0.5em 0;
+            font-family: Serif;
+            font-size:   200%;
+            font-weight: normal;
+            color: #505050;
+        }
+
+        h3 {
+            margin:  1.5em 0 0.5em 0;
+            font-family: Serif;
+            font-size:   140%;
+            font-weight: normal;
+            color: #000;
+        }
+
+        P {
+            text-align:  left;
+            margin-top:  0em;
+        }
+
+        li {
+            margin-top: .5em;
+        }
+
+        .indented {
+            margin-left: 4em;
+        }
+
+        .byline {
+            margin-top: 1em;
+            font-size: smaller;
+        }
+
+        table {
+            margin: 0 auto 2em auto;
+            border-collapse: collapse;
+        }
+
+        caption {
+            caption-side: top;
+            font-style: italic;
+        }
+
+        th {
+            padding: 0.2em 1ex;
+            border: solid 2px #668866;
+            background: #ddeedd;
+            line-height: 1.2em;
+        }
+
+        td {
+            padding: 0 1ex;
+            border: solid 2px #668866;
+        }
+
+        table.centered td, table.centered th {
+            text-align: center;
+        }
+
+        pre {
+            font-family: Consolas, Monaco, monospace;
+        }
+
+        pre.small {
+            font-size: 80%;
+            line-height: 1.4em;
+            font-weight: bold;
+        }
+
+        dt {
+            font-weight: bold;
+            font-style:  italic;
+            margin-top:  1em;
+        }
+
+        sup {
+            font-size: 70%;
+        }
+
+        span.red   { color: #e00000; }
+        span.green { color: #00aa00; }
+        span.blue  { color: #0000ff; }
+    </style>
+</head>
+
+
+
+<body data-gr-c-s-loaded="true"><h1><nobr>IEEE Standard 754</nobr>
+    <nobr>Floating Point Numbers</nobr></h1>
+
+<div class="byline">
+    <a href="mailto:steve@hollasch.net?Subject=IEEE%20Floating%20Point%20Page">Steve Hollasch</a>
+    &nbsp;•&nbsp; Last update 2018-08-24
+</div>
+
+<hr style="margin-bottom:3em; border: solid 3px #555555;">
+
+
+<p> IEEE Standard 754 floating point is the most common representation today for real numbers on
+computers, including Intel-based PC's, Macintoshes, and most Unix platforms. This article gives a
+brief overview of IEEE floating point and its representation. Discussion of arithmetic
+implementation may be found in the book mentioned at the bottom of this article.
+
+
+</p><h2 id="intro">What Are Floating Point Numbers?</h2> 
+
+<p> There are several ways to represent real numbers on computers. Fixed point places a radix point
+somewhere in the middle of the digits, and is equivalent to using integers that represent portions
+of some unit. For example, one might represent 1/100ths of a unit; if you have four decimal digits,
+you could represent 10.82, or 00.01. Another approach is to use rationals, and represent every
+number as the ratio of two integers.
+
+</p><p> Floating-point representation – the most common solution – uses scientific notation to encode
+numbers, with a base number and an exponent. For example, 123.456 could be represented as 1.23456 ×
+10<sup>2</sup>. In hexadecimal, the number 123.abc might be represented as 1.23abc × 16<sup>2</sup>.
+In binary, the number 10100.110 could be represented as 1.0100110 × 2<sup>4</sup>.
+
+</p><p> Floating-point solves a number of representation problems. Fixed-point has a fixed window of
+representation, which limits it from representing both very large and very small numbers. Also,
+fixed-point is prone to a loss of precision when two large numbers are divided.
+
+</p><p> Floating-point, on the other hand, employs a sort of "sliding window" of precision appropriate
+to the scale of the number. This allows it to represent numbers from 1,000,000,000,000 to
+0.0000000000000001 with ease, and while maximizing precision (the number of digits) at both ends of
+the scale.
+
+</p><h2 id="storage">Storage Layout</h2>
+
+<p> IEEE floating point numbers have three basic components:  the sign, the exponent, and the
+mantissa. The mantissa is composed of the <dfn>fraction</dfn> and an implicit leading digit
+(explained below). The exponent base (2) is implicit and need not be stored.
+
+</p><p> The following table shows the layout for single (32-bit) and double (64-bit) precision
+floating-point values. The number of bits for each field are shown, followed by the bit ranges in
+square brackets. 00 = least-significant bit.
+
+    </p><table class="centered">
+        <caption>Floating Point Components</caption>
+        <tbody><tr><th></th>
+            <th>Sign</th>
+            <th>Exponent</th>
+            <th>Fraction</th>
+
+        </tr><tr><th>Single Precision</th>
+            <td>1 [31]
+            </td><td>8 [30–23]
+            </td><td>23 [22–00]
+
+        </td></tr><tr><th>Double Precision</th>
+            <td>1 [63]
+            </td><td>11 [62–52]
+            </td><td>52 [51–00]
+    </td></tr></tbody></table>
+
+<p> Laid out as bits, floating point numbers look like this:
+
+</p><pre class="small">Single: <span class="blue">S</span><span class="red">EEEEEEE E</span><span class="green">FFFFFFF FFFFFFFF FFFFFFFF</span>
+Double: <span class="blue">S</span><span class="red">EEEEEEE EEEE</span><span class="green">FFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF</span>
+</pre>
+
+<h3>The Sign Bit</h3>
+
+<p> The sign bit is as simple as it gets: 0 denotes a positive number, and 1 denotes a negative
+number. Flipping the value of this bit flips the sign of the number.
+
+</p><h3>The Exponent</h3>
+
+<p> The exponent field needs to represent both positive and negative exponents. To do this, a
+<dfn>bias</dfn> is added to the actual exponent in order to get the stored exponent. For IEEE
+single-precision floats, this value is 127. Thus, to express an exponent of zero, 127 is stored in
+the exponent field. A stored value of 200 indicates an exponent of (200−127), or 73. For reasons
+discussed later, exponents of −127 (all 0s) and +128 (all 1s) are reserved for special numbers.
+
+</p><p> Double precision has an 11-bit exponent field, with a bias of 1023.
+
+</p><h3>The Mantissa</h3>
+
+<p> The <dfn>mantissa</dfn>, also known as the <dfn>significand</dfn>, represents the precision bits
+of the number. It is composed of an implicit leading bit (left of the radix point) and the fraction
+bits (to the right of the radix point).
+
+</p><p> To find out the value of the implicit leading bit, consider that any number can be expressed in
+scientific notation in many different ways. For example, the number 50 can be represented as any of
+these:
+
+</p><pre class="indented">0.050 × 10<sup>3</sup>
+.5000 × 10<sup>2</sup>
+5.000 × 10<sup>1</sup>
+50.00 × 10<sup>0</sup>
+5000. × 10<sup>−2</sup></pre>
+
+<p> In order to maximize the quantity of representable numbers, floating-point numbers are typically
+stored in <dfn>normalized</dfn> form. This basically puts the radix point after the first non-zero
+digit. In normalized form, 50 is represented as <nobr>5.000 × 10<sup>1</sup></nobr>.
+
+</p><p> A nice little optimization is now available to us in base two, since binary has only one
+possible non-zero digit: 1. Thus, we can just assume a leading digit of 1, and don't need to store
+it in the floating-point representation. As a result, we can assume a leading digit of 1 without
+storing it, so that a 32-bit floating-point value effectively has 24 bits of mantissa: 23 explicit
+fraction bits plus one implicit leading bit of 1.
+
+
+</p><h3>Putting it All Together</h3> <p>So, to sum up:
+
+</p><ol>
+    <li>The sign bit is 0 for positive, 1 for negative.
+    </li><li>The exponent base is two.
+    </li><li>The exponent field contains 127 plus the true exponent for single-precision, or 1023 plus
+        the true exponent for double precision.
+    </li><li>The first bit of the mantissa is typically assumed to be 1, yielding a full mantissa of
+        1.<i>f</i>, where <i>f</i> is the field of fraction bits.
+</li></ol>
+
+<h2 id="ranges">Ranges of Floating-Point Numbers</h2>
+
+<p> Let's consider single-precision floats for a second. We're taking essentially a 32-bit number
+and reinterpreting the fields to cover a much broader range. Something has to give, and that
+something is precision. For example, regular 32-bit integers, with all precision centered around
+zero, can precisely store integers with 32-bits of resolution. Single-precision floating-point, on
+the other hand, is unable to match this resolution with its 24 bits. It does, however, approximate
+this value by effectively truncating from the lower end and rounding up. For example:
+
+</p><pre class="small indented">    11110000 11001100 10101010 10101111  // 32-bit integer
+= +1.1110000 11001100 10101011 x 2<sup>31</sup>     // Single-precision float
+=   11110000 11001100 10101011 00000000  // Actual float value
+</pre>
+
+<p> This approximates the 32-bit value, but doesn't yield an exact representation. On the other
+hand, besides the ability to represent fractional components (which integers lack completely), the
+floating-point value can represent numbers around 2<sup>127</sup>, compared to 32-bit integers'
+maximum value around 2<sup>32</sup>.
+
+</p><p> The range of positive floating point numbers can be split into normalized numbers (which
+preserve the full precision of the mantissa), and <i>denormalized</i> numbers (which assume a
+leading digit of 0, discussed later) which use only a portion of the fractions's precision.
+
+    </p><table>
+        <caption>Floating Point Range</caption>
+
+        <tbody><tr><th></th>
+            <th>Denormalized</th>
+            <th>Normalized</th>
+            <th>Approximate Decimal</th>
+        </tr><tr><th>Single Precision</th>
+            <td><nobr>± 2<sup>−149</sup> to (1−2<sup>−23</sup>)×2<sup>−126</sup></nobr>
+            </td><td><nobr>± 2<sup>−126</sup> to (2−2<sup>−23</sup>)×2<sup>127<sup></sup></sup></nobr>
+            </td><td><nobr>± ≈10<sup>−44.85</sup> to ≈10<sup>38.53</sup></nobr>
+        </td></tr><tr><th>Double Precision</th>
+            <td><nobr>± 2<sup>−1074</sup> to (1−2<sup>−52</sup>)×2<sup>−1022</sup></nobr>
+            </td><td><nobr>± 2<sup>−1022</sup> to (2−2<sup>−52</sup>)×2<sup>1023<sup></sup></sup></nobr>
+            </td><td><nobr>± ≈10<sup>−323.3</sup> to ≈10<sup>308.3</sup></nobr>
+    </td></tr></tbody></table>
+
+<p> Since every floating-point number has a corresponding, negated value (by toggling the sign bit),
+the ranges above are symmetric around zero.
+
+</p><p> There are five distinct numerical ranges that single-precision floating-point numbers are
+<strong>not</strong> able to represent with the scheme presented so far:
+
+    </p><ol>
+        <li>Negative numbers less than −(2−2<sup>−23</sup>) × 2<sup>127</sup>
+            (<dfn>negative overflow</dfn>)
+        </li><li>Negative numbers greater than −2<sup>−149</sup> (<dfn>negative underflow</dfn>)
+        </li><li>Zero
+        </li><li>Positive numbers less than 2<sup>−149</sup> (<dfn>positive underflow</dfn>)
+        </li><li>Positive numbers greater than (2−2<sup>−23</sup>) × 2<sup>127</sup>
+            (<dfn>positive overflow</dfn>)
+    </li></ol>
+
+<p> Overflow means that values have grown too large for the representation, much in the same way
+that you can overflow integers. Underflow is a less serious problem because is just denotes a loss
+of precision, which is guaranteed to be closely approximated by zero.
+
+</p><p> Here's a table of the total effective range of finite IEEE floating-point numbers:
+
+    </p><table>
+        <caption>Effective Floating-Point Range</caption>
+
+        <tbody><tr><th></th>
+            <th>Binary</th>
+            <th>Decimal</th>
+
+        </tr><tr><th>Single</th>
+            <td>± (2−2<sup>−23</sup>) × 2<sup>127</sup>
+            </td><td>≈ ± 10<sup>38.53</sup>
+
+        </td></tr><tr><th>Double</th>
+            <td>± (2−2<sup>−52</sup>) × 2<sup>1023</sup>
+            </td><td>≈ ± 10<sup>308.25</sup>
+
+    </td></tr></tbody></table>
+
+<p> <em>Note that the extreme values occur (regardless of sign) when the exponent is at the maximum
+value for finite numbers (2<sup>127</sup> for single-precision, 2<sup>1023</sup> for double), and
+the mantissa is filled with 1s (including the normalizing 1 bit).</em>
+
+
+</p><h2 id="specials">Special Values</h2>
+
+<p> IEEE reserves exponent field values of all 0s and all 1s to denote special values in the
+floating-point scheme.
+
+</p><dl>
+    <dt id="denormalized">Denormalized</dt>
+    <dd>
+      <p> If the exponent is all 0s, then the value is a <dfn>denormalized</dfn> number, which now
+      has an assumed leading <em>0</em> before the binary point. Thus, this represents a number
+      <nobr>(−1)<sup><i>s</i></sup> × 0.<i>f</i> × 2<sup>−126</sup></nobr>, where <i>s</i> is the
+      sign bit and <i>f</i> is the fraction. For double precision, denormalized numbers are of the
+      form <nobr>(−1)<sup><i>s</i></sup> × 0.<i>f</i> × 2<sup>−1022</sup></nobr>.
+
+      </p><p> As denormalized numbers get smaller, they gradually lose precision as the left bits of the
+      fraction become zeros. At the smallest non-zero denormalized value (only the least-significant
+      fraction bit is one), a 32-bit floating-point number has but a single bit of precision,
+      compared to the standard 24-bits for normalized values.
+    </p></dd>
+
+    <dt id="zero">Zero</dt>
+    <dd>
+      You can think of zero as a denormalized number (an implicit leading 0 bit) with all 0 fraction
+      bits. Note that −0 and +0 are distinct values, though they both compare as equal.
+    </dd>
+
+    <dt id="infinity">Infinity</dt>
+    <dd>
+      The values +∞ and −∞ are denoted with an exponent of all 1s and a fraction of all 0s. The sign
+      bit distinguishes between negative infinity and positive infinity. Being able to denote
+      infinity as a specific value is useful because it allows operations to continue past overflow
+      situations. <em>Operations with infinite values are well defined in IEEE floating
+      point.</em>
+    </dd>
+
+    <dt id="nan">Not A Number</dt>
+    <dd>
+      <p> The value <acronym>NaN</acronym> (<dfn>Not a Number</dfn>) is used to represent a value
+      that does not represent a real number. NaN's are represented by a bit pattern with an exponent
+      of all 1s and a non-zero fraction. There are two categories of NaN: <acronym>QNaN</acronym>
+      (<dfn>Quiet NaN</dfn>) and <acronym>SNaN</acronym> (<dfn>Signalling NaN</dfn>).
+
+      </p><p> A QNaN is a NaN with the most significant fraction bit set. QNaN's propagate freely
+      through most arithmetic operations. These values are generated from an operation when the
+      result is not mathematically defined.
+
+      </p><p> An SNaN is a NaN with the most significant fraction bit clear. It can be used to signal an
+      exception when used in operations. SNaN's can be handy to assign to uninitialized variables to
+      trap premature usage.
+
+      </p><p> Semantically, QNaN's denote <em>indeterminate</em> operations, while SNaN's denote
+      <em>invalid</em> operations. </p></dd>
+    </dl>
+
+
+
+<h2 id="operations">Special Operations</h2>
+
+<p> Operations on special numbers are well-defined by IEEE. In the simplest case, any operation with
+a NaN yields a NaN result. Other operations are as follows:
+
+    </p><table class="centered">
+        <caption>Special Arithmetic Results</caption>
+        <tbody><tr><th>Operation</th>
+            <th>Result</th>
+        </tr><tr><td>n ÷ ±∞
+            </td><td>0
+        </td></tr><tr><td>±∞ × ±∞
+            </td><td>±∞
+        </td></tr><tr><td>±<i>nonZero</i> ÷ ±0
+            </td><td>±∞
+        </td></tr><tr><td>±<i>finite</i> × ±∞
+            </td><td>±∞
+        </td></tr><tr><td>∞ + ∞<br>
+            ∞ − −∞
+            </td><td>+∞
+        </td></tr><tr><td>−∞ − ∞<br>
+            −∞ + −∞
+            </td><td><i>−∞</i>
+        </td></tr><tr><td>∞ − ∞<br>
+            −∞ + ∞
+            </td><td><i>NaN</i>
+        </td></tr><tr><td>±0 ÷ ±0
+            </td><td><i>NaN</i>
+        </td></tr><tr><td>±∞ ÷ ±∞
+            </td><td><i>NaN</i>
+        </td></tr><tr><td>±∞ × 0
+            </td><td><i>NaN</i>
+        </td></tr><tr><td><i>NaN</i> == <i>NaN</i>
+            </td><td><i>false</i>
+    </td></tr></tbody></table>
+
+<h2 id="summary">Summary</h2>
+
+<p> To sum up, the following are the corresponding values for a given representation:
+
+    </p><table class="centered">
+        <caption>Float Values (<i>b</i> = bias)</caption>
+
+        <tbody><tr><th>Sign</th>
+            <th>Exponent (<i>e</i>)</th>
+            <th>Fraction (<i>f</i>)</th>
+            <th>Value</th>
+
+        </tr><tr><td>0
+            </td><td>00⋯00
+            </td><td>00⋯00
+            </td><td>+0
+
+        </td></tr><tr><td>0
+            </td><td>00⋯00
+            </td><td>00⋯01<br>⋮<br>11⋯11
+            </td><td>Positive Denormalized Real<br>
+                0.<i>f</i> × 2<sup>(−<i>b</i>+1)</sup>
+
+        </td></tr><tr><td>0
+            </td><td>00⋯01<br>⋮<br>11⋯10
+            </td><td>XX⋯XX
+            </td><td>Positive Normalized Real<br>
+                1.<i>f</i> × 2<sup>(<i>e</i>−<i>b</i>)</sup>
+
+        </td></tr><tr><td>0
+            </td><td>11⋯11
+            </td><td>00⋯00
+            </td><td>+∞
+
+        </td></tr><tr><td>0
+            </td><td>11⋯11
+            </td><td>00⋯01<br>⋮<br>01⋯11
+            </td><td>SNaN
+
+        </td></tr><tr><td>0
+            </td><td>11⋯11
+            </td><td>1X⋯XX
+            </td><td>QNaN
+
+        </td></tr><tr><td>1
+            </td><td>00⋯00
+            </td><td>00⋯00
+            </td><td>−0
+
+        </td></tr><tr><td>1
+            </td><td>00⋯00
+            </td><td>00⋯01<br>⋮<br>11⋯11
+            </td><td>Negative Denormalized Real<br>
+                −0.<i>f</i> × 2<sup>(−<i>b</i>+1)</sup>
+
+        </td></tr><tr><td>1
+            </td><td>00⋯01<br>⋮<br>11⋯10
+            </td><td>XX⋯XX
+            </td><td>Negative Normalized Real<br>
+                −1.<i>f</i> × 2<sup>(<i>e</i>−<i>b</i>)</sup>
+
+        </td></tr><tr><td>1
+            </td><td>11⋯11
+            </td><td>00⋯00
+            </td><td>−∞
+
+        </td></tr><tr><td>1
+            </td><td>11⋯11
+            </td><td>00⋯01<br>⋮<br>01⋯11
+            </td><td>SNaN
+
+        </td></tr><tr><td>1
+            </td><td>11⋯11
+            </td><td>1X⋯XX
+            </td><td>QNaN
+
+    </td></tr></tbody></table>
+
+
+<h2 id="refs">References</h2>
+
+<p> A lot of this stuff was observed from small programs I wrote to go back and forth between hex
+and floating point (<i>printf</i>-style), and to examine the results of various operations. The bulk
+of this material, however, was lifted from Stallings' book.
+
+</p><ol>
+    <li><cite>Computer Organization and Architecture</cite>,
+        William Stallings, pp. 222–234
+        Macmillan Publishing Company,
+        ISBN 0-02-415480-6
+
+    </li><li>IEEE Computer Society (1985),
+        <cite>IEEE Standard for Binary Floating-Point Arithmetic</cite>,
+        IEEE Std 754-1985. 
+
+    </li><li><cite>Intel Architecture Software Developer's Manual, Volume 1: Basic Architecture</cite>,
+        (a PDF document downloaded from <a href="http://intel.com/">intel.com</a>).
+</li></ol>
+
+
+
+<h2 id="seealso">See Also</h2>
+
+<ul>
+    <li><a href="http://standards.ieee.org/">IEEE Standards Site</a>
+
+    </li><li><cite>
+        <a href="https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/">
+        Comparing floating point numbers</a></cite>, Bruce Dawson.
+        This is an excellent article on the traps, pitfalls and solutions for comparing floating
+        point numbers. Hint – epsilon comparison is usually the <em>wrong</em> solution.
+
+    </li><li><cite>
+        <a href="https://randomascii.wordpress.com/2012/05/20/thats-not-normalthe-performance-of-odd-floats/">
+        That's Not Normal – the Performance of Odd Floats</a></cite>, Bruce Dawson.
+        This is another good article covering performance issues with IEEE specials on x86
+        architecture.
+</li></ul>
+
+<div style="text-align:right; font-size:smaller; margin-top:3em;">
+    <hr>
+    © 2001–2018
+    <a href="mailto:steve@hollasch.net?Subject=IEEE%20Floating%20Point%20Page">
+    Steve Hollasch</a>
+</div>
+</body></html>
