@@ -94,7 +94,7 @@ uint32_t normalize(uint32_t sign, int32_t exp, uint64_t sig_grs)
 	FLOAT f;
 	f.sign = sign;
 	f.exponent = (uint32_t)(exp & 0xff);
-	f.fraction = sig_grs; // only the lowest 23 bits are kept
+	f.fraction = sig_grs; 
 	return f.val;
 }
 
